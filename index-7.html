@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meu sono</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#13141b">
+<link rel="icon" href="icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef0f6;--tx:#14151c;--mut:#666a79;--sheet:#fff;--line:#d8dbe5;--pill:#e1e4ee;
+--card:#13141b;--ctx:#f1f2f6;--cmut:#8b8e9c;--empty:#292b36;--c1:#e5484d;--c2:#2f7a5c;--c3:#3fbf7f;--c4:#9bf2c0;--c5:#f5a54a;--ac:#3fd6a3;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0a0b0f;--tx:#f1f2f6;--mut:#8b8e9c;--sheet:#1b1c25;--line:#2a2c37;--pill:#181a22}}
+:root[data-theme="dark"]{--bg:#0a0b0f;--tx:#f1f2f6;--mut:#8b8e9c;--sheet:#1b1c25;--line:#2a2c37;--pill:#181a22}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font-family:'Jost',system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+main{max-width:760px;margin:0 auto;padding:22px 16px 56px}
+h1{font-weight:200;font-size:34px;line-height:1.1;margin:6px 0 4px;letter-spacing:.01em}
+.sub{color:var(--mut);margin:0 0 18px;font-size:16px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--pill);padding:5px;border-radius:18px;margin-bottom:14px}
+.tab{font:inherit;font-size:18px;font-weight:400;border:0;border-radius:14px;background:transparent;color:var(--mut);padding:12px 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+.tab i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:14px;font-weight:500;color:#0b0c10}
+.tab small{font-size:12px;opacity:.75}
+.tab[aria-selected="true"]{background:var(--card);color:var(--ctx)}
+.vs{border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:14px}
+.vs h2{font-weight:400;font-size:16px;margin:0 0 10px}
+.bar{display:grid;grid-template-columns:78px 1fr 62px;align-items:center;gap:10px;margin:7px 0;font-size:15px}
+.bar .t{height:10px;background:var(--pill);border-radius:6px;overflow:hidden}
+.bar .t b{display:block;height:100%;border-radius:6px}
+.bar span:last-child{text-align:right;font-weight:300;font-size:17px}
+.vs p{margin:10px 0 0;color:var(--mut);font-size:15px}
+.card{background:var(--card);color:var(--ctx);border-radius:22px;padding:20px 18px 16px;border-top:3px solid var(--ac)}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+.yr{display:flex;align-items:center;gap:8px}
+.yr b{font-weight:200;font-size:48px;line-height:1}
+.nav{background:none;border:1px solid #333646;color:var(--ctx);width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer}
+.nav:disabled{opacity:.3;cursor:default}
+.who{text-align:right;color:var(--cmut);font-size:15px;line-height:1.3}
+.who b{display:block;color:var(--ac);font-weight:400;font-size:18px}
+.scroll{overflow-x:auto;margin-top:16px;padding-bottom:8px}
+.wrap{position:relative;width:max-content;padding-top:18px}
+.months{position:absolute;top:0;left:0;height:14px}
+.months span{position:absolute;font-size:11px;color:var(--cmut)}
+.grid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,12px);gap:4px}
+.d{width:12px;height:12px;border-radius:50%;border:0;padding:0;background:var(--empty);cursor:pointer}
+.d.ph{background:none;pointer-events:none}
+.d.fut{opacity:.3;cursor:default}
+.d.t{box-shadow:0 0 0 2px var(--card),0 0 0 3px var(--ctx)}
+.b1{background:var(--c1)}.b2{background:var(--c2)}.b3{background:var(--c3)}.b4{background:var(--c4)}.b5{background:var(--c5)}
+.d:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #7aa7ff;outline-offset:2px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-top:10px;font-size:13px;color:var(--cmut)}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+.stat{border:1px solid var(--line);border-radius:16px;padding:12px}
+.stat b{display:block;font-weight:300;font-size:28px}
+.stat span{color:var(--mut);font-size:14px}
+.perf{margin:14px 0 0;padding:14px;border-left:3px solid var(--ac);background:color-mix(in srgb,var(--ac) 10%,transparent);border-radius:0 14px 14px 0;font-size:16px;line-height:1.45}
+.quote{margin:0 0 16px;padding:14px 16px;border-left:3px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);border-radius:0 16px 16px 0}
+.quote small{display:block;color:var(--mut);font-size:13px;margin-bottom:4px}
+.quote p{margin:0;font-size:19px;font-weight:300;line-height:1.4}
+.stat.wide{grid-column:1/-1}
+.stat .goal{height:6px;background:var(--pill);border-radius:4px;margin-top:10px;overflow:hidden}
+.stat .goal i{display:block;height:100%;background:var(--ac)}
+.foot{margin-top:18px;color:var(--mut);font-size:14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.foot button{font:inherit;background:none;border:0;color:var(--mut);text-decoration:underline;cursor:pointer;padding:0}
+.veil{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:5}
+.veil.on{display:flex}
+.sheet{background:var(--sheet);color:var(--tx);width:100%;max-width:480px;border-radius:22px 22px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom,0px))}
+@media(min-width:560px){.veil{align-items:center}.sheet{border-radius:22px}}
+.sheet h2{font-weight:400;font-size:20px;margin:0 0 4px}
+.sheet p.n{color:var(--mut);font-size:14px;margin:0 0 16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:14px;color:var(--mut)}
+input[type=time]{width:100%;margin-top:6px;font:inherit;font-size:22px;font-weight:300;padding:10px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--tx)}
+input:disabled{opacity:.8}
+.res{margin:16px 0;padding:14px;border-radius:14px;border:1px solid var(--line)}
+.res small{display:block;color:var(--mut);font-size:14px}
+.res b{font-weight:300;font-size:34px;display:block}
+.res span{color:var(--mut);font-size:15px;line-height:1.4}
+.goal{height:6px;background:var(--pill);border-radius:4px;margin:8px 0 10px;overflow:hidden}
+.goal i{display:block;height:100%;background:var(--c3)}
+.btns{display:flex;gap:8px}
+.btns button{flex:1;font:inherit;font-size:16px;padding:12px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--tx);cursor:pointer}
+.btns .pri{background:var(--c3);border-color:var(--c3);color:#06140d;font-weight:500}
+.btns .del{flex:0 0 auto;color:var(--c1)}
+.pick button{display:block;width:100%;font:inherit;font-size:20px;padding:16px;margin-top:10px;border-radius:16px;border:1px solid var(--line);background:transparent;color:var(--tx);cursor:pointer}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#222431;color:#fff;padding:10px 16px;border-radius:12px;font-size:15px;display:none;z-index:9;max-width:90%}
+
+.tabs{display:flex;overflow-x:auto;gap:6px}
+.tab{flex:0 0 auto;padding:10px 14px}
+.tab.add{color:var(--mut);border:1px dashed var(--line);background:transparent}
+.bar span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.login{max-width:420px;margin:0 auto;padding-top:10vh}
+.lt{font-size:36px;margin:0 0 24px}
+.form{display:flex;flex-direction:column;gap:12px}
+input[type=text],input[type=email],input[type=password]{width:100%;margin-top:6px;font:inherit;font-size:18px;padding:12px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--tx)}
+.err{color:var(--c1);font-size:14px;margin:0;min-height:0}
+.pri{font:inherit;font-size:17px;padding:13px;border-radius:12px;border:1px solid var(--c3);background:var(--c3);color:#06140d;font-weight:500;cursor:pointer;width:100%}
+.lnk{font:inherit;font-size:15px;background:none;border:0;color:var(--mut);text-decoration:underline;cursor:pointer;padding:4px}
+.sheet{max-height:92vh;overflow-y:auto}
+.sheet h3{font-weight:400;font-size:16px;margin:18px 0 6px}
+.code{font-size:30px;font-weight:300;letter-spacing:.12em;text-align:center;padding:12px;border:1px dashed var(--line);border-radius:14px;margin:8px 0 10px;user-select:all}
+.li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:16px}
+.li button{font:inherit;font-size:14px;background:none;border:1px solid var(--line);color:var(--c1);border-radius:10px;padding:6px 10px;cursor:pointer}
+.empty{color:var(--mut);font-size:14px;margin:4px 0}
+</style>
+</head>
+<body>
+<main>
+  <p class="sub" id="ld">Carregando…</p>
+
+  <section id="login" class="login" style="display:none">
+    <h1 class="lt">Entrar em Sleep</h1>
+    <div class="form">
+      <label id="nmw" style="display:none">Seu nome<input id="nm" type="text" autocomplete="name" maxlength="30"></label>
+      <label>E-mail<input id="em" type="email" autocomplete="email"></label>
+      <label>Senha<input id="pw" type="password" autocomplete="current-password"></label>
+      <p class="err" id="lgErr"></p>
+      <button class="pri" id="lgBtn" type="button">Entrar</button>
+      <button class="lnk" id="lgSw" type="button">Não tem conta? Criar conta</button>
+      <button class="lnk" id="lgFg" type="button">Esqueci a senha</button>
+    </div>
+  </section>
+
+  <div id="app" style="display:none">
+    <h1>Meu sono</h1>
+    <p class="sub">Cada um registra o seu. Amigos conectados veem o sono uns dos outros.</p>
+    <blockquote class="quote"><small>Frase do dia</small><p id="qt"></p></blockquote>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <section class="vs" id="vs"></section>
+    <section class="card" id="card">
+      <div class="head">
+        <div class="yr"><button class="nav" id="prev" aria-label="Ano anterior">‹</button><b id="year"></b><button class="nav" id="next" aria-label="Próximo ano">›</button></div>
+        <div class="who"><b id="wname"></b><span id="count"></span></div>
+      </div>
+      <div class="scroll" id="scroll"><div class="wrap"><div class="months" id="months"></div><div class="grid" id="grid"></div></div></div>
+      <div class="leg">Horas dormidas
+        <span><i class="b1"></i>menos de 6h</span><span><i class="b2"></i>6h</span><span><i class="b3"></i>7h</span><span><i class="b4"></i>8h</span><span><i class="b5"></i>9h+</span>
+      </div>
+    </section>
+    <div class="stats">
+      <div class="stat wide"><b id="pscore">–</b><span id="plabel">Desempenho</span><div class="goal"><i id="pbar"></i></div></div>
+      <div class="stat"><b id="nights">0</b><span>noites dormidas</span></div>
+      <div class="stat"><b id="avg">–</b><span>sono médio</span></div>
+      <div class="stat"><b id="good">–</b><span>noites com 7h+</span></div>
+      <div class="stat"><b id="streak">0</b><span>seguidas com 7h+</span></div>
+    </div>
+    <p class="perf" id="perf"></p>
+    <div class="foot"><span id="mode"></span><span><button id="frOpen" type="button">Amigos e meu código</button> · <button id="out" type="button">Sair</button></span></div>
+  </div>
+</main>
+
+<div class="veil" id="veil">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="st">
+    <h2 id="st"></h2>
+    <p class="n" id="sn">A noite conta no dia em que você acordou.</p>
+    <div class="row">
+      <label>Dormiu às<input type="time" id="bed" value="23:00"></label>
+      <label>Acordou às<input type="time" id="wake" value="07:00"></label>
+    </div>
+    <div class="res" id="resb"><small id="rl">Horas dormidas</small><b id="rd"></b><div class="goal"><i id="gl"></i></div><span id="rf"></span></div>
+    <div class="btns"><button class="del" id="del" type="button">Apagar</button><button id="close" type="button">Fechar</button><button class="pri2 pri" id="save" type="button">Salvar</button></div>
+  </div>
+</div>
+
+<div class="veil" id="fr">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ft">
+    <h2 id="ft">Amigos</h2>
+    <p class="n">Passe este código para um amigo. Quem digitar o código passa a ver o seu sono.</p>
+    <div class="code" id="mycode">–</div>
+    <div class="btns"><button id="cp" type="button">Copiar código</button></div>
+    <label style="margin-top:16px">Código de um amigo<input id="fc" type="text" autocapitalize="characters" autocomplete="off" maxlength="12"></label>
+    <p class="err" id="frErr"></p>
+    <div class="btns" style="margin-top:8px"><button class="pri" id="fcBtn" type="button">Conectar</button></div>
+    <h3>Amigos que você vê</h3><div id="fl"></div>
+    <h3>Quem vê o seu sono</h3><div id="rlist"></div>
+    <div class="btns" style="margin-top:16px"><button id="frClose" type="button">Fechar</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var firebaseConfig={
+  apiKey:"AIzaSyDV8xWQy4LbGKTIqDEARqYt58aFbeiRG9I",
+  authDomain:"sono-dupla.firebaseapp.com",
+  projectId:"sono-dupla",
+  storageBucket:"sono-dupla.firebasestorage.app",
+  messagingSenderId:"449296819644",
+  appId:"1:449296819644:web:21420783fb56366e5ab7b9"
+};
+var $=function(id){return document.getElementById(id)};
+var today=new Date();today.setHours(0,0,0,0);
+var year=today.getFullYear();
+var MES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+var COL=['#3fd6a3','#a594ff','#ffb454','#59b8ff','#ff7eb6','#c6e86a'];
+var uid=null,P={},following=[],subs={},unMe=null,unPf=null,tab=null,sel=null,authMode='in',queue=Promise.resolve(),auth=null,fs=null,booting=false;
+var FRASES=["Quem governa o próprio descanso governa o próprio dia.", "Não é o tempo que falta, é a atenção que sobra para o que não importa.", "A disciplina é a forma mais silenciosa de liberdade.", "Cada noite bem dormida é uma promessa cumprida com você mesmo.", "O corpo cobra, no fim, tudo o que a vontade pediu emprestado.", "Ninguém muda de vida de uma vez: muda-se de hábito em hábito.", "Dormir bem é um ato de respeito por quem você será amanhã.", "A constância vence o talento quando o talento descansa.", "Não espere motivação: construa o dia que a torna desnecessária.", "O que você repete em silêncio, o mundo um dia chama de destino.", "Descansar não é parar de lutar, é afiar a lâmina.", "A mente clara nasce da noite honesta.", "Hoje é o único dia em que você pode ser a pessoa que está se tornando.", "Quem cuida do começo do dia cuida do fim dele.", "Pequenas escolhas, repetidas, desenham grandes vidas.", "O sono é a oficina onde o dia se desfaz e se refaz.", "A paciência com o processo é a mais rara forma de ambição.", "Você não precisa de mais horas, precisa de mais presença.", "A força que você procura já dorme em você: ela só precisa de descanso.", "Controlar o que dá para controlar já é meio caminho da paz.", "O hábito é a filosofia colocada em prática.", "Cada amanhecer é um convite para recomeçar sem pedir desculpas ao passado.", "Uma boa noite não é luxo, é fundação.", "A vitória silenciosa de hoje é a confiança de amanhã.", "O cansaço ensina o que a pressa esconde.", "Quem sabe parar chega mais longe do que quem nunca para.", "Seja gentil com o seu corpo: é a única casa de onde você nunca se muda.", "A grandeza se constrói em horários comuns.", "Antes de tentar mudar o mundo, aprenda a acordar bem.", "Fazer o simples todos os dias é o que poucos têm coragem de fazer.", "Não existe pressa para quem tem direção.", "A noite é o intervalo em que a vida se organiza por dentro.", "A melhor energia é a que você acorda já tendo.", "Seja a pessoa que o seu eu cansado agradece.", "A calma é um treino, não um dom.", "Quem dorme com a consciência leve acorda com o passo firme.", "Pensar bem exige dormir bem.", "O sucesso é só o nome que damos a muitos dias repetidos com cuidado.", "Respeite o seu ritmo: nem a natureza floresce todos os dias.", "A vida pede presença, e a presença pede descanso.", "Cumpra a promessa pequena de hoje e a grande vem sozinha.", "Nenhuma conquista nasce de um corpo esgotado e de uma mente em guerra.", "Você é o resultado das suas noites e das suas manhãs.", "É no silêncio que as ideias amadurecem.", "Quem se cuida em segredo brilha em público.", "O descanso de hoje decide a coragem de amanhã.", "Às vezes a coragem é só ir dormir cedo.", "Cresça devagar, mas nunca deixe de crescer.", "O tempo que você protege hoje é a liberdade que você colhe depois.", "Quem escolhe o descanso escolhe também a clareza."];
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function toast(t){var e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){e.style.display='none'},3500)}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function dur(b,w){var x=b.split(':').map(Number),y=w.split(':').map(Number);var m=(y[0]*60+y[1])-(x[0]*60+x[1]);if(m<=0)m+=1440;return m/60}
+function bucket(h){return h<6?1:h<7?2:h<8?3:h<9?4:5}
+function fmt2(h){var m=Math.round(h*60);return Math.floor(m/60)+'h '+String(m%60).padStart(2,'0')+'min'}
+function fmt(h){var m=Math.round(h*60);return Math.floor(m/60)+'h'+String(m%60).padStart(2,'0')}
+function feedback(h){
+  if(h<5)return 'Muito pouco. Foco e humor costumam cair no dia seguinte.';
+  if(h<6)return 'Abaixo do ideal. Tente dormir mais cedo hoje.';
+  if(h<7)return 'Quase lá. Mais 30 a 60 minutos já fazem diferença.';
+  if(h<8)return 'Boa noite de sono, dentro da meta.';
+  if(h<9)return 'Ótima noite. Recuperação completa.';
+  return 'Sono longo. Se for frequente, vale observar a qualidade.';
+}
+(function(){var n=Math.floor(Date.UTC(today.getFullYear(),today.getMonth(),today.getDate())/864e5),q=FRASES[n%FRASES.length];$('qt').textContent=q})();
+
+function ents(id){return (P[id]&&P[id].entries)||{}}
+function hrs(id,k){var e=ents(id)[k];return e?dur(e.b,e.w):null}
+function colorOf(id){if(id===uid)return COL[0];for(var i=0;i<following.length;i++)if(following[i].uid===id)return COL[1+(i%5)];return COL[1]}
+function order(){return [uid].concat(following.map(function(f){return f.uid}))}
+function streak(p){var s=0,d=new Date(today);for(var i=0;i<400;i++){var h=hrs(p,iso(d));if(h===null){if(i===0){d.setDate(d.getDate()-1);continue}break}if(h>=7)s++;else break;d.setDate(d.getDate()-1)}return s}
+function week(p){var t=0,n=0;for(var i=0;i<7;i++){var d=new Date(today);d.setDate(d.getDate()-i);var h=hrs(p,iso(d));if(h!==null){t+=h;n++}}return n?t/n:null}
+
+/* ---------- Tela de login ---------- */
+function showLogin(){$('ld').style.display='none';$('app').style.display='none';$('login').style.display='block'}
+function showApp(){$('ld').style.display='none';$('login').style.display='none';$('app').style.display='block'}
+function authMsg(e){
+  var c=e&&e.code||'';
+  if(c==='auth/invalid-email')return 'E-mail inválido.';
+  if(c==='auth/weak-password')return 'A senha precisa ter pelo menos 6 caracteres.';
+  if(c==='auth/email-already-in-use')return 'Esse e-mail já tem conta. Toque em "Entrar".';
+  if(c==='auth/invalid-credential'||c==='auth/user-not-found'||c==='auth/wrong-password')return 'E-mail ou senha incorretos.';
+  if(c==='auth/network-request-failed')return 'Sem internet. Tente de novo.';
+  if(c==='auth/too-many-requests')return 'Muitas tentativas. Espere um pouco.';
+  if(c==='auth/operation-not-allowed')return 'O login por e-mail ainda não foi ativado no Firebase.';
+  return 'Não foi possível entrar. Tente de novo.';
+}
+function setMode(m){authMode=m;$('nmw').style.display=m==='up'?'block':'none';$('lgBtn').textContent=m==='up'?'Criar conta':'Entrar';$('lgSw').textContent=m==='up'?'Já tem conta? Entrar':'Não tem conta? Criar conta';$('pw').autocomplete=m==='up'?'new-password':'current-password';$('lgErr').textContent=''}
+$('lgSw').addEventListener('click',function(){setMode(authMode==='in'?'up':'in')});
+$('lgBtn').addEventListener('click',function(){
+  var em=$('em').value.trim(),pw=$('pw').value,nm=$('nm').value.trim();
+  $('lgErr').textContent='';
+  if(!auth){$('lgErr').textContent='O Firebase não está configurado.';return}
+  if(!em||!pw){$('lgErr').textContent='Preencha e-mail e senha.';return}
+  var p;
+  if(authMode==='up'){
+    if(!nm){$('lgErr').textContent='Digite o seu nome.';return}
+    try{localStorage.setItem('sono:pend',nm)}catch(e){}
+    p=auth.createUserWithEmailAndPassword(em,pw).then(function(c){return c.user.updateProfile({displayName:nm})});
+  }else p=auth.signInWithEmailAndPassword(em,pw);
+  p.catch(function(e){$('lgErr').textContent=authMsg(e)});
+});
+$('lgFg').addEventListener('click',function(){
+  var em=$('em').value.trim();
+  if(!em){$('lgErr').textContent='Digite seu e-mail acima e toque de novo.';return}
+  auth.sendPasswordResetEmail(em).then(function(){$('lgErr').textContent='Enviamos um e-mail para trocar a senha.'}).catch(function(e){$('lgErr').textContent=authMsg(e)});
+});
+$('out').addEventListener('click',function(){if(auth)auth.signOut()});
+
+/* ---------- Dados ---------- */
+function genCode(){var a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<8;i++)s+=a[Math.floor(Math.random()*a.length)];return s}
+async function createProfile(u){
+  var nm=u.displayName;try{nm=nm||localStorage.getItem('sono:pend')}catch(e){}
+  nm=nm||(u.email||'Eu').split('@')[0];
+  for(var i=0;i<8;i++){
+    var code=genCode();
+    try{
+      await fs.doc('codes/'+code).set({uid:u.uid,name:nm});
+      await fs.doc('sono/'+u.uid).set({name:nm,code:code,entries:{}});
+      await fs.doc('perfil/'+u.uid).set({following:[]},{merge:true});
+      try{localStorage.removeItem('sono:pend')}catch(e){}
+      return;
+    }catch(e){if(i===7)throw e}
+  }
+}
+function cleanup(){
+  if(unMe){unMe();unMe=null}if(unPf){unPf();unPf=null}
+  Object.keys(subs).forEach(function(k){subs[k]()});subs={};
+  uid=null;P={};following=[];tab=null;booting=false;
+}
+async function boot(u){
+  if(booting||uid===u.uid)return;
+  booting=true;uid=u.uid;
+  try{
+    var s=await fs.doc('sono/'+uid).get();
+    if(!s.exists)await createProfile(u);
+  }catch(e){toast('Não consegui acessar o banco. Confira as regras do Firestore.');booting=false;uid=null;showLogin();return}
+  tab=uid;showApp();
+  unMe=fs.doc('sono/'+uid).onSnapshot(function(s){
+    var d=s.data()||{};
+    P[uid]={name:d.name||'Eu',code:d.code||'',entries:d.entries||{}};
+    render();
+  },function(){toast('Erro ao ler os seus dados.')});
+  unPf=fs.doc('perfil/'+uid).onSnapshot(function(s){
+    following=(s.data()&&s.data().following)||[];
+    syncFriends();render();
+  },function(){});
+}
+function syncFriends(){
+  var ids={};following.forEach(function(f){ids[f.uid]=1;
+    if(!subs[f.uid]){
+      subs[f.uid]=fs.doc('sono/'+f.uid).onSnapshot(function(s){
+        var d=s.data()||{};P[f.uid]={name:d.name||f.name,entries:d.entries||{}};render();
+      },function(){P[f.uid]={name:f.name,entries:{},denied:true};render()});
+    }});
+  Object.keys(subs).forEach(function(k){if(!ids[k]){subs[k]();delete subs[k];delete P[k]}});
+}
+function saveMine(){
+  var snap=JSON.parse(JSON.stringify(ents(uid)));
+  queue=queue.then(function(){return fs.doc('sono/'+uid).update({entries:snap})}).catch(function(){toast('Não consegui sincronizar. Tente salvar de novo.')});
+}
+
+/* ---------- Telas ---------- */
+function renderTabs(){
+  $('tabs').innerHTML=order().map(function(id){
+    var n=P[id]?P[id].name:'…';
+    return '<button class="tab" role="tab" data-id="'+esc(id)+'" aria-selected="'+(id===tab)+'"><i style="background:'+colorOf(id)+'">'+esc(n.charAt(0).toUpperCase())+'</i>'+esc(id===uid?'Eu':n)+'</button>';
+  }).join('')+'<button class="tab add" type="button" data-add="1">+ Amigo</button>';
+}
+function renderVS(){
+  var ids=order(),h='<h2>Últimos 7 dias</h2>',vals=[];
+  ids.forEach(function(id){
+    var v=P[id]?week(id):null;vals.push({id:id,v:v});
+    h+='<div class="bar"><span>'+esc(P[id]?P[id].name:'…')+'</span><span class="t"><b style="width:'+(v?Math.min(v/9,1)*100:0)+'%;background:'+colorOf(id)+'"></b></span><span>'+(v?fmt(v):'–')+'</span></div>';
+  });
+  var w=vals.filter(function(x){return x.v!==null}).sort(function(a,b){return b.v-a.v});
+  if(w.length>=2){
+    var df=Math.round((w[0].v-w[1].v)*60);
+    h+='<p>'+(df<10?'Empate: vocês dormem quase igual.':esc(P[w[0].id].name)+' foi quem mais dormiu nos últimos 7 dias.')+'</p>';
+  }else h+='<p>'+(following.length?'Quando mais de uma pessoa tiver registros, a comparação aparece aqui.':'Toque em "+ Amigo" para conectar com alguém e comparar o sono de vocês.')+'</p>';
+  $('vs').innerHTML=h;
+}
+function render(){
+  if(!uid||!P[uid])return;
+  if(!P[tab])tab=uid;
+  var p=tab,pp=P[p];
+  document.documentElement.style.setProperty('--ac',colorOf(p));
+  renderTabs();renderVS();
+  $('year').textContent=year;
+  $('next').disabled=year>=today.getFullYear();
+  $('wname').textContent=pp.name+(p===uid?' (você)':'');
+  var first=new Date(year,0,1),off=first.getDay();
+  var n=((year%4===0&&year%100!==0)||year%400===0)?366:365,html='',cnt=0,tot=0,good=0;
+  for(var i=0;i<off;i++)html+='<span class="d ph"></span>';
+  for(var d=0;d<n;d++){
+    var dt=new Date(year,0,1+d),k=iso(dt),h=hrs(p,k),fut=dt>today;
+    var c='d'+(h!==null?' b'+bucket(h):'')+(fut?' fut':'')+(dt.getTime()===today.getTime()?' t':'');
+    if(h!==null){cnt++;tot+=h;if(h>=7)good++}
+    html+='<button class="'+c+'" data-k="'+k+'"'+(fut?' disabled':'')+' aria-label="'+dt.toLocaleDateString('pt-BR',{day:'numeric',month:'long'})+(h!==null?', '+fmt(h):', sem registro')+'"></button>';
+  }
+  $('grid').innerHTML=html;
+  var ml='';
+  for(var m=0;m<12;m++){var doy=Math.round((new Date(year,m,1)-first)/864e5);ml+='<span style="left:'+Math.floor((off+doy)/7)*16+'px">'+MES[m]+'</span>'}
+  $('months').innerHTML=ml;
+  $('count').textContent=cnt+(cnt===1?' noite':' noites')+' em '+year;
+  $('nights').textContent=cnt;
+  $('avg').textContent=cnt?fmt2(tot/cnt):'–';
+  $('good').textContent=cnt?Math.round(good/cnt*100)+'%':'–';
+  $('streak').textContent=streak(p);
+  var k7=Object.keys(ents(p)).sort().slice(-7),pa=null;
+  if(k7.length)pa=k7.reduce(function(t,k){return t+hrs(p,k)},0)/k7.length;
+  $('pscore').textContent=pa===null?'–':Math.round(Math.min(pa/8,1)*100)+'%';
+  $('plabel').textContent=pa===null?'Desempenho: sem registros ainda':'Desempenho: '+(pa>=8?'excelente':pa>=7?'bom':pa>=6?'regular':'baixo')+' (últimos '+k7.length+(k7.length===1?' registro':' registros')+', meta de 8h)';
+  $('pbar').style.width=pa===null?'0':Math.min(pa/8,1)*100+'%';
+  var pf=$('perf');
+  if(pp.denied)pf.textContent='Você não tem mais acesso aos dados de '+pp.name+'. Peça um código novo, se quiser voltar a ver.';
+  else if(!k7.length)pf.textContent=p===uid?'Registre sua primeira noite para ver o seu desempenho.':pp.name+' ainda não registrou nenhuma noite.';
+  else pf.textContent='Últimos '+k7.length+(k7.length===1?' registro':' registros')+': média de '+fmt2(pa)+'. '+(pa>=8?'Sono excelente. Mantenha a rotina.':pa>=7?'Dentro da meta de 7h ou mais. Continue assim.':pa>=6?'Perto da meta. Dormir 30 minutos mais cedo já ajuda.':'Está dormindo pouco. Vale priorizar dormir mais cedo esta semana.');
+  $('mode').textContent=p===uid?'Você pode editar esta aba.':'Aba de '+pp.name+': somente leitura.';
+}
+
+/* ---------- Dia clicado ---------- */
+function upd(){
+  var h=dur($('bed').value||'23:00',$('wake').value||'07:00');
+  $('rd').textContent=fmt2(h);$('gl').style.width=Math.min(h/8,1)*100+'%';$('rf').textContent=feedback(h);
+}
+function openSheet(k){
+  sel=k;var q=k.split('-').map(Number),dt=new Date(q[0],q[1]-1,q[2]),e=ents(tab)[k],ed=tab===uid;
+  $('st').textContent=dt.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  $('sn').textContent=ed?'A noite conta no dia em que você acordou.':'Noite de '+P[tab].name+' (somente leitura).';
+  $('bed').value=e?e.b:'23:00';$('wake').value=e?e.w:'07:00';
+  $('bed').disabled=$('wake').disabled=!ed;
+  $('save').style.display=ed?'':'none';$('del').style.display=ed&&e?'':'none';
+  upd();
+  if(!ed&&!e){$('rd').textContent='Sem registro';$('gl').style.width='0';$('rf').textContent='Essa noite ainda não foi registrada.'}
+  $('veil').classList.add('on');
+}
+function closeSheet(){$('veil').classList.remove('on');sel=null}
+$('tabs').addEventListener('click',function(ev){
+  var b=ev.target.closest('.tab');if(!b)return;
+  if(b.dataset.add){openFr();return}
+  tab=b.dataset.id;render();
+});
+$('grid').addEventListener('click',function(ev){var b=ev.target.closest('.d[data-k]');if(b&&!b.disabled)openSheet(b.dataset.k)});
+$('bed').addEventListener('input',upd);$('wake').addEventListener('input',upd);
+$('save').addEventListener('click',function(){
+  if(!sel||tab!==uid)return;
+  P[uid].entries[sel]={b:$('bed').value||'23:00',w:$('wake').value||'07:00'};
+  saveMine();closeSheet();render();
+});
+$('del').addEventListener('click',function(){if(!sel||tab!==uid)return;delete P[uid].entries[sel];saveMine();closeSheet();render()});
+$('close').addEventListener('click',closeSheet);
+$('veil').addEventListener('click',function(e){if(e.target===this)closeSheet()});
+$('prev').addEventListener('click',function(){year--;render()});
+$('next').addEventListener('click',function(){if(year<today.getFullYear()){year++;render()}});
+
+/* ---------- Amigos ---------- */
+function openFr(){
+  $('mycode').textContent=(P[uid]&&P[uid].code)||'–';
+  $('fc').value='';$('frErr').textContent='';
+  renderFriends();loadReaders();
+  $('fr').classList.add('on');
+}
+function closeFr(){$('fr').classList.remove('on')}
+function renderFriends(){
+  $('fl').innerHTML=following.length?following.map(function(f){return '<div class="li"><span>'+esc(f.name)+'</span><button type="button" data-rf="'+esc(f.uid)+'">Remover</button></div>'}).join(''):'<p class="empty">Você ainda não vê ninguém.</p>';
+}
+function loadReaders(){
+  $('rlist').innerHTML='<p class="empty">Carregando…</p>';
+  fs.collection('sono/'+uid+'/readers').get().then(function(q){
+    var h='';q.forEach(function(d){h+='<div class="li"><span>'+esc(d.data().name||'Amigo')+'</span><button type="button" data-rr="'+esc(d.id)+'">Remover</button></div>'});
+    $('rlist').innerHTML=h||'<p class="empty">Ninguém vê o seu sono ainda.</p>';
+  }).catch(function(){$('rlist').innerHTML='<p class="empty">Não consegui carregar a lista.</p>'});
+}
+$('frOpen').addEventListener('click',openFr);
+$('frClose').addEventListener('click',closeFr);
+$('fr').addEventListener('click',function(e){if(e.target===this)closeFr()});
+$('cp').addEventListener('click',function(){
+  var c=(P[uid]&&P[uid].code)||'';
+  try{navigator.clipboard.writeText(c).then(function(){toast('Código copiado.')},function(){toast('Seu código: '+c)})}catch(e){toast('Seu código: '+c)}
+});
+$('fcBtn').addEventListener('click',async function(){
+  var code=$('fc').value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  $('frErr').textContent='';
+  if(code.length<6){$('frErr').textContent='Digite o código completo.';return}
+  try{
+    var c=await fs.doc('codes/'+code).get();
+    if(!c.exists){$('frErr').textContent='Código não encontrado.';return}
+    var o=c.data();
+    if(o.uid===uid){$('frErr').textContent='Esse é o seu próprio código.';return}
+    if(following.some(function(f){return f.uid===o.uid})){$('frErr').textContent='Você já vê essa pessoa.';return}
+    await fs.doc('sono/'+o.uid+'/readers/'+uid).set({code:code,name:P[uid].name});
+    await fs.doc('perfil/'+uid).set({following:following.concat([{uid:o.uid,name:o.name}])},{merge:true});
+    $('fc').value='';toast('Conectado com '+o.name+'.');
+  }catch(e){$('frErr').textContent='Não consegui conectar. Confira o código e tente de novo.'}
+});
+$('fl').addEventListener('click',async function(ev){
+  var b=ev.target.closest('[data-rf]');if(!b)return;
+  var id=b.dataset.rf;
+  try{
+    await fs.doc('sono/'+id+'/readers/'+uid).delete().catch(function(){});
+    await fs.doc('perfil/'+uid).set({following:following.filter(function(f){return f.uid!==id})},{merge:true});
+    if(tab===id)tab=uid;
+  }catch(e){toast('Não consegui remover.')}
+  renderFriends();
+});
+$('rlist').addEventListener('click',async function(ev){
+  var b=ev.target.closest('[data-rr]');if(!b)return;
+  try{await fs.doc('sono/'+uid+'/readers/'+b.dataset.rr).delete()}catch(e){toast('Não consegui remover.')}
+  loadReaders();
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeSheet();closeFr()}});
+
+/* ---------- Início ---------- */
+function scrollToday(){
+  var off=new Date(year,0,1).getDay(),doy=Math.round((today-new Date(year,0,1))/864e5),sc=$('scroll');
+  sc.scrollLeft=Math.max(0,Math.floor((off+doy)/7)*16-sc.clientWidth/2);
+}
+(function(){
+  if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js')}catch(e){}}
+  if(!(firebaseConfig.projectId&&window.firebase)){showLogin();$('lgErr').textContent='Não foi possível carregar o Firebase. Verifique a internet.';return}
+  firebase.initializeApp(firebaseConfig);
+  auth=firebase.auth();fs=firebase.firestore();
+  auth.onAuthStateChanged(function(u){
+    if(u){boot(u).then(function(){setTimeout(scrollToday,50)})}
+    else{cleanup();showLogin()}
+  });
+})();
+</script>
+</body>
+</html>
